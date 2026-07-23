@@ -3,17 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>カフェ注文システムテスト</title>
+  <title>カフェ注文システム</title>
+
+  <!-- Supabaseのライブラリを読み込み -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 50px; background: #fdfbf7; }
-    h1 { color: #5a3e2b; }
-    .card { border: 1px solid #ddd; border-radius: 12px; padding: 20px; display: inline-block; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    body { font-family: sans-serif; text-align: center; padding: 40px; background: #fdfbf7; color: #333; }
+    h1 { color: #5a3e2b; margin-bottom: 30px; }
+    .menu-container { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+    .card { border: 1px solid #e2d9d0; border-radius: 12px; padding: 20px; width: 220px; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .badge { background: #5a3e2b; color: white; padding: 4px 8px; border-radius: 6px; font-size: 12px; }
+    .price { font-size: 20px; font-weight: bold; color: #d9534f; margin: 15px 0; }
+    .btn { background: #28a745; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; }
+    .btn:hover { background: #218838; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>☕ Cafe Order System</h1>
-    <p>Cloudflare への公開成功です！</p>
+
+  <h1>☕ Cafe Order System</h1>
+  
+  <div id="menu" class="menu-container">
+    <p>メニューを読み込み中...</p>
   </div>
+
+  <script>
+    // 1. Supabaseの初期化設定（ここに先ほど確認したご自身の情報を貼り付けます）
+    const SUPABASE_URL = 'https://wxvhynyeavpwnpxsnxvc.supabase.co/rest/v1/';
+    const SUPABASE_ANON_KEY = 'sb_publishable_v-lBZ_Tg9MsL-8cLOJOPVQ_ApK8WjsQ';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // 2. データベースからメニューを取得して画面に表示する関数
+    async function fetchProducts() {
+      const { data: products, error } = await supabase
+        .from('products')
+        .select('*');
+
+      const menuElement = document.getElementById('menu');
+
+      if (error) {
+        console.error('エラー:', error);
+        menuElement.innerHTML = '<p>メニューの読み込みに失敗しました。</p>';
+        return;
+      }
+
+      if (products.length === 0) {
+        menuElement.innerHTML = '<p>登録されている商品がありません。</p>';
+        return;
+      }
+
+      // 取得したデータをHTMLに変換して表示
+      menuElement.innerHTML = products.map(product => `
+        <div class="card">
+          <span class="badge">商品 No.${product.id}</span>
+          <h2 style="font-size: 18px; margin: 10px 0;">${product.name}</h2>
+          <p class="price">${product.price.toLocaleString()} 円</p>
+          <button class="btn" onclick="alert('${product.name} を選択しました！')">注文する</button>
+        </div>
+      `).join('');
+    }
+
+    // 画面が開いたら実行
+    fetchProducts();
+  </script>
 </body>
 </html>
