@@ -28,32 +28,33 @@
   </div>
 
   <script>
-    // 1. Supabaseの初期化設定（末尾の /rest/v1/ を削除しました）
+    // 1. Supabaseの接続設定
     const SUPABASE_URL = 'https://wxvhynyeavpwnpxsnxvc.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_v-lBZ_Tg9MsL-8cLOJOPVQ_ApK8WjsQ';
     
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // 2. Clientの初期化（ここが重複しないように1回だけにしています）
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 2. データベースからメニューを取得して画面に表示する関数
+    // 3. データベースからメニューを取得して表示する関数
     async function fetchProducts() {
-      const { data: products, error } = await supabase
+      const { data: products, error } = await supabaseClient
         .from('products')
         .select('*');
 
       const menuElement = document.getElementById('menu');
 
       if (error) {
-        console.error('エラー:', error);
-        menuElement.innerHTML = '<p>メニューの読み込みに失敗しました。</p>';
+        console.error('エラーの詳細:', error);
+        menuElement.innerHTML = `<p style="color: red;">エラーが発生しました: ${error.message}</p>`;
         return;
       }
 
-      if (products.length === 0) {
+      if (!products || products.length === 0) {
         menuElement.innerHTML = '<p>登録されている商品がありません。</p>';
         return;
       }
 
-      // 取得したデータをHTMLに変換して表示
+      // 取得したデータを表示
       menuElement.innerHTML = products.map(product => `
         <div class="card">
           <span class="badge">商品 No.${product.id}</span>
